@@ -4,6 +4,7 @@ import BootstrapVue from 'bootstrap-vue'
 import vuerouter from 'vue-router';
 import { routes } from './router/router';
 import Veevalidate from "vee-validate"
+import store from "./store/store";
 
 Vue.config.productionTip = false
 
@@ -20,5 +21,6 @@ const router = new vuerouter({
 
 new Vue({
   router: router,
+  store,
   render: h => h(App),
 }).$mount('#app')

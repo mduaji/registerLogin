@@ -4,18 +4,18 @@
       <br>
       <br>
       <br>
-    <div v-show="OTPhide" class="text-center">
-      <b-row>
-        <b-col sm="3">
-          <label for="input-default">Enter OTP:</label>
-        </b-col>
-        <b-col sm="5">
-          <b-input v-model="OTPvalue" placeholder="Enter OTP"></b-input>
-        </b-col>
-      </b-row>
-      <br>
-      <b-button styl="float:center" variant="primary" @click="OTPCheck()">Submit</b-button>
-    </div>
+      <div v-show="OTPhide" class="text-center">
+        <b-row>
+          <b-col sm="3">
+            <label for="input-default">Enter OTP:</label>
+          </b-col>
+          <b-col sm="5">
+            <b-input v-model="OTPvalue" placeholder="Enter OTP"></b-input>
+          </b-col>
+        </b-row>
+        <br>
+        <b-button styl="float:center" variant="primary" @click="OTPCheck()">Submit</b-button>
+      </div>
     </b-container>
     <div v-show="hideall">
       <div class="text-center">
@@ -250,14 +250,16 @@
 <script>
 import axios from "axios";
 import { constants } from "crypto";
+import { mapState, mapGetters, mapActions } from "vuex";
 export default {
   data() {
     return {
-      arr: [],
+      //arr: [],
       item: {
         Email: "",
         Password: "",
-        ComfirmPassword: ""
+        ComfirmPassword: "",
+        token: ""
       },
       form: {
         Name: "",
@@ -273,25 +275,37 @@ export default {
       OTPhide: false,
       OTPvalue: "",
       passSubmit: false
+      // LoggedIn: false
     };
+  },
+  mounted: function() {
+    this.token = localStorage.getItem("token");
+    this.$store.commit("setToken", this.token);
+  },
+  computed: {
+    isLoggedIn() {
+      return this.$store.getters.isLoggedIn;
+    }
   },
   methods: {
     loginData: function() {
-      if (!this.item.Email || !this.item.Password) {
-        this.$validator
-          .validateAll()
-          .then(result => {
-            if (!result) {
-              alert("Enter All Details");
-              return;
-            }
-          })
-          .catch(() => {});
+      this.$validator
+        .validateAll()
+        .then(result => {
+          if (!result) {
+            //alert("error Enter the All Details");
+            return;
+          }
+        })
+        .catch(() => {});
+      const data = {
+        Email: this.item.Email,
+        Password: this.item.Password
+      };
+      console.log(data);
+      if (data.Email === "") {
+        alert("Enter Email and Password");
       } else {
-        const data = {
-          Email: this.item.Email,
-          Password: this.item.Password
-        };
         axios({
           method: "POST",
           url: "http://localhost:5000/api/login",
@@ -299,20 +313,41 @@ export default {
         })
           .then(response => {
             // this.arr.push(response);
-            console.log("result:" + response);
+            console.log("result:" + response.data.token);
+            const token = response.data.token;
+            this.$store.commit("setToken", token);
             alert("logged in successfully");
             this.$router.push(`/viewList/${data.Email}`);
           })
           .catch(e => {
-            console.log(e.response);
-            if (e.response.status == 404) {
+            console.log(e);
+            if (e.response.status == 500) {
               alert(e.response.data);
             } else {
               alert(e.response.data);
             }
           });
+        //);
       }
     },
+    // addData() {
+    //   const payload = {
+    //     Email: this.item.Email,
+    //     Password: this.item.Password
+    //   };
+    //   //console.log("adddata>>>>>" + payload);
+    //   this.$store.dispatch("postData", payload);
+    //   console.log(this.$store.state);
+    //   console.log(this.$store.state.token.length);
+    //   console.log(this.$store.state.resErr.length);
+    //   if (this.$store.state.token == "" || !this.$store.state.resErr == "") {
+    //     alert("empty");
+    //   } else {
+    //     alert("correct");
+    //   }
+    //   //if(this.$store.state.err)
+    //   // this.$router.push(`/viewList/${payload.Email}`);
+    // },
     registerData: function() {
       this.$bvModal.hide("modal-scoped");
       this.$validator
@@ -363,7 +398,7 @@ export default {
       }
     },
     forgetPassword: function() {
-      console.log("formate")
+      console.log("formate");
       return axios
         .get(
           `http://localhost:5000/api/forgetPassword?Email=${this.item.Email}`
@@ -381,7 +416,7 @@ export default {
     },
     OTPCheck: function() {
       return axios
-        .get(`http://localhost:5000/api/getOTP?OTP=${this.OTPvalue}`)
+        .get(`http://localhost:5000/api/getOTP?OTPvl=${this.OTPvalue}`)
         .then(response => {
           console.log(response);
           this.hideall = true;
@@ -396,18 +431,25 @@ export default {
         });
     },
     updatepassword: function() {
-      const data = {
-        Password: this.item.Password
-      };
-      return axios
-        .put(`http://localhost:5000/api/putpass?Email=${this.item.Email}`, data)
-        .then(response => {
-          console.log(response);
-          this.$router.go();
-        })
-        .catch(err => {
-          console.log(err);
-        });
+      if (this.item.Password === this.item.ComfirmPassword) {
+        const data = {
+          Password: this.item.Password
+        };
+        return axios
+          .put(
+            `http://localhost:5000/api/putpass?Email=${this.item.Email}`,
+            data
+          )
+          .then(response => {
+            console.log(response);
+            this.$router.go();
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }else{
+        alert("the Password not match")
+      }
     }
   }
 };
