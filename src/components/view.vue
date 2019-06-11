@@ -173,7 +173,7 @@
             <b-col sm="0">
               <b-button variant="info" v-show="inputhide" @click="showPassword()">Show</b-button>
             </b-col>
-          </b-row> -->
+          </b-row>-->
           <br>
           <div class="text-center">
             <b-button style="float:center" variant="primary" @click="changepasswordfn()">Submit</b-button>
@@ -272,32 +272,31 @@ export default {
       this.$store.commit("removeToken");
     },
     changepasswordfn: function() {
-      if(this.Password===this.ConfirmPassword){
-         const data = {
-        Password: this.Password
-      };
-      axios({
-        method: "PUT",
-        url: `http://localhost:5000/api/changepassword?Email=${
-          this.$route.params.Email
-        }`,
-        data,
-        headers: { Authorization: `Bearer ${this.$store.state.token}` }
-      })
-        .then(response => {
-          console.log(response);
-          this.userhide = true;
-          this.changepassword = false;
-          this.$store.commit("removeToken");
-          this.$router.go();
+      if (this.Password === this.ConfirmPassword) {
+        const data = {
+          Password: this.Password
+        };
+        axios({
+          method: "PUT",
+          url: `http://localhost:5000/api/changepassword?Email=${
+            this.$route.params.Email
+          }`,
+          data,
+          headers: { Authorization: `Bearer ${this.$store.state.token}` }
         })
-        .catch(err => {
-          console.log(err);
-        });
-      }else{
-        alert("password is not match")
+          .then(response => {
+            console.log(response);
+            this.userhide = true;
+            this.changepassword = false;
+            this.$store.commit("removeToken");
+            this.$router.go();
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      } else {
+        alert("password is not match");
       }
-     
     },
     hideuser: function() {
       this.userhide = false;
